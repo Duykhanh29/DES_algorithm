@@ -12,6 +12,9 @@
 #include <chrono>
 
 #include "controller.h"
+
+using namespace System;
+using namespace System::IO;
 namespace controllerNameSpace {
 	using namespace std;
 
@@ -165,6 +168,13 @@ namespace controllerNameSpace {
 	//**********************************************************************
 	string apply_P(const string& bit_stream) {
 		string new_text = "";
+
+
+
+
+
+
+
 		for (unsigned int i = 0; i < 32; i++)
 			new_text += bit_stream[P[i] - 1];
 		return new_text;
@@ -288,7 +298,7 @@ namespace controllerNameSpace {
 	//Purpose: Performs DES encryption/decryption algorithm
 	//returns: string
 	//**********************************************************************
-	string perform_Encryption_DES(string& fileName, string& key) {
+	string perform_Encryption_DES(string& fileName, string& key,string& filePath) {
 
 		auto start = std::chrono::steady_clock::now(); // Bắt đầu đo thời gian
 		string text = read_data(fileName);
@@ -318,23 +328,24 @@ namespace controllerNameSpace {
 		}
 
 		// Lưu chuỗi kết quả vào tệp tin
-		string output = "C:/Users/Admin/OneDrive - actvn.edu.vn/Máy tính/encryptedData.txt";
-		write_data(output, encrypted_data);
+		//string output = "C:/Users/Admin/OneDrive - actvn.edu.vn/Máy tính/encryptedData.txt";
+		write_data(filePath, encrypted_data);
 
 		// tính thời gian
 		auto end = std::chrono::steady_clock::now(); // Kết thúc đo thời gian
 		std::chrono::duration<double> duration = end - start; // Tính thời gian đã trôi qua
 		double encryptionTime = duration.count();
-
-		int minutes = static_cast<int>(encryptionTime) / 60;
-		int seconds = static_cast<int>(encryptionTime) % 60;
-		int milliseconds = static_cast<int>((encryptionTime - static_cast<int>(encryptionTime)) * 1000);
-
+		string time= caculateTime(encryptionTime);
+		return time;
+	}
+	string caculateTime(double duration) {
+		int minutes = static_cast<int>(duration) / 60;
+		int seconds = static_cast<int>(duration) % 60;
+		int milliseconds = static_cast<int>((duration - static_cast<int>(duration)) * 1000);
 		std::ostringstream oss;
 		oss << std::setfill('0') << std::setw(2) << minutes << ":"
 			<< std::setw(2) << seconds << ":"
 			<< std::setw(3) << milliseconds;
-
 		return oss.str();
 	}
 
@@ -374,11 +385,11 @@ namespace controllerNameSpace {
 		return encrypted;
 	}
 
-	string perform_Decryption_DES(string& fileName, string& key) {
+	string perform_Decryption_DES(string& fileName, string& key,string& filePath) {
 
 		string round_result, decrypted_data, left, right, ciphertext_hex, ciphertext_bin, key_bin;
 		vector<string> subkeys;
-		fileName = "C:/Users/Admin/OneDrive - actvn.edu.vn/Máy tính/encryptedData.txt";
+		//fileName = "C:/Users/Admin/OneDrive - actvn.edu.vn/Máy tính/encryptedData.txt";
 
 		auto start = std::chrono::steady_clock::now(); // Bắt đầu đo thời gian
 
@@ -398,25 +409,15 @@ namespace controllerNameSpace {
 		}
 		decrypted_data = hex_to_utf8(decrypted_data);
 		// Lưu chuỗi dữ liệu đã giải mã vào tệp tin
-		string output = "C:/Users/Admin/OneDrive - actvn.edu.vn/Máy tính/output.txt";
-		write_data(output, decrypted_data);
+	//	string output = "C:/Users/Admin/OneDrive - actvn.edu.vn/Máy tính/output.txt";
+		write_data(filePath, decrypted_data);
 
 		// tính thời gian
 		auto end = std::chrono::steady_clock::now(); // Kết thúc đo thời gian
 		std::chrono::duration<double> duration = end - start; // Tính thời gian đã trôi qua
 		double decryptionTime = duration.count();
-
-		// Chuyển đổi thời gian thành định dạng mm:ss
-		int minutes = static_cast<int>(decryptionTime) / 60;
-		int seconds = static_cast<int>(decryptionTime) % 60;
-		int milliseconds = static_cast<int>((decryptionTime - static_cast<int>(decryptionTime)) * 1000);
-
-		std::ostringstream oss;
-		oss << std::setfill('0') << std::setw(2) << minutes << ":"
-			<< std::setw(2) << seconds << ":"
-			<< std::setw(3) << milliseconds;
-
-		return oss.str();
+		string time = caculateTime(decryptionTime);
+		return time;
 	}
 
 	string decrypt_DES(const string& ciphertext_hex, const string& key) {
@@ -434,7 +435,7 @@ namespace controllerNameSpace {
 		// Chuyển đổi khóa từ hex sang nhị phân và sắp xếp subkeys theo thứ tự ngược lại
 		key_bin = hex_to_bin(key);
 		key_bin = apply_PC1(key_bin);
-		subkeys = generate_subkeys(key_bin);
+		subkeys = generate_subkeys(key_bin);    
 		reverse(subkeys.begin(), subkeys.end());
 
 		// Thực hiện các vòng lặp giải mã DES
@@ -528,7 +529,7 @@ namespace controllerNameSpace {
 		mp['D'] = "1101";
 		mp['E'] = "1110";
 		mp['F'] = "1111";
-		for (unsigned int i = 0; i < hex.size(); i++) {
+		for (unsigned int i = 0; i < hex.size(); i++){
 			bin += mp[hex[i]];
 		}
 		int zeros_to_prepend = 64 - bin.length();
@@ -654,5 +655,48 @@ namespace controllerNameSpace {
 		}
 		return new_string;
 	}
+
+
+
+	// validate 
+	bool isHexadecimal(const std::string& input) {
+		// Kiểm tra từng ký tự trong chuỗi
+		for (char c : input) {
+			// Kiểm tra xem ký tự có nằm trong khoảng [0-9] hoặc [A-F] hoặc [a-f] không
+			if (!isxdigit(c)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+
+	void createAndWriteToFile(String^ filePath, String^ fileContent) {
+		
+		// Tạo một đối tượng StreamWriter để viết vào tập tin
+		StreamWriter^ writer = gcnew StreamWriter(filePath);
+
+		// Ghi nội dung vào tập tin
+		writer->Write(fileContent);
+		// Đóng tập tin sau khi ghi xong
+		writer->Close();
+	}
+
+	bool createFile( String^ filePath)
+	{
+		// Tạo một đối tượng ofstream để tạo tập tin
+		std::ofstream outFile;
+		outFile.open(msclr::interop::marshal_as<std::string>(filePath), std::ios::out | std::ios::trunc);
+		// Kiểm tra xem tạo file có thành công không
+		if (!outFile.is_open()) {
+		//	throw gcnew IOException("Không thể tạo hoặc mở tập tin để viết.");
+			return false;
+		}
+		// Đóng tập tin sau khi tạo
+		outFile.close();
+		return true;
+	}
+
+
 }
 

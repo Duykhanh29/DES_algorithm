@@ -3,11 +3,13 @@
 #pragma once
 #include <string>
 
+using namespace System;
+using namespace System::IO;
 namespace controllerNameSpace {
 	using namespace std;
-	string perform_Decryption_DES(string& fileName, string& key);
+	string perform_Decryption_DES(string& fileName, string& key,string& filePath);
 	string decrypt_DES(const string& ciphertext_hex, const string& key);
-	string perform_Encryption_DES(string& fileName, string& key);
+	string perform_Encryption_DES(string& fileName, string& key, string& filePath);
 	string encrypt_DES(const string& plaintext_hex, const string& key);
 	string hex_to_bin(const string& hex);
 
@@ -41,4 +43,8 @@ namespace controllerNameSpace {
 	vector<string> generate_subkeys(const string& key);
 	string utf8_to_hex(const string& utf8String);
 	string hex_to_utf8(const string& hexString);
+	bool isHexadecimal(const std::string& input);
+	string caculateTime(double duration);
+	void createAndWriteToFile(String^ directoryPath, String^ fileName, String^ fileContent);
+	bool createFile(String^ filePath);
 }
